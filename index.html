@@ -135,10 +135,19 @@
             display: flex;
             gap: 12px;
             margin-bottom: 32px;
+            align-items: flex-start;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
         }
 
         #todoInput {
             flex: 1;
+            min-width: 0;
             padding: 14px 16px;
             border: 2px solid var(--input-border);
             border-radius: 8px;
@@ -147,6 +156,25 @@
             color: var(--text-primary);
             transition: all 0.3s ease;
             line-height: 1.5;
+        }
+
+        #dueDateInput {
+            padding: 14px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        #dueDateInput:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--container-bg);
         }
 
         #todoInput:focus {
@@ -202,6 +230,14 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-primary);
             animation: fadeIn 0.3s ease-out;
+            gap: 12px;
+        }
+
+        .todo-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 6px;
         }
 
         @keyframes fadeIn {
@@ -266,6 +302,28 @@
             color: var(--text-secondary);
         }
 
+        .todo-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .todo-item.completed .todo-date {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .date-badge {
+            background: rgba(102, 126, 234, 0.15);
+            color: var(--btn-primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
         .delete-btn {
             padding: 8px 12px;
             background: var(--delete-btn);
@@ -310,12 +368,19 @@
         </div>
         
         <div class="input-container">
-            <input
-                type="text"
-                id="todoInput"
-                placeholder="Add a new todo..."
-                autocomplete="off"
-            />
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="todoInput"
+                    placeholder="Add a new todo..."
+                    autocomplete="off"
+                />
+                <input
+                    type="date"
+                    id="dueDateInput"
+                    title="Select due date (optional)"
+                />
+            </div>
             <button id="addBtn">Add</button>
         </div>
 
@@ -325,6 +390,7 @@
 
     <script>
         const todoInput = document.getElementById('todoInput');
+        const dueDateInput = document.getElementById('dueDateInput');
         const addBtn = document.getElementById('addBtn');
         const todoList = document.getElementById('todoList');
         const emptyMessage = document.getElementById('emptyMessage');
@@ -386,10 +452,26 @@
                 checkbox.checked = todo.completed;
                 checkbox.addEventListener('change', () => toggleTodo(index));
 
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'todo-content';
+
                 const span = document.createElement('span');
                 span.className = 'todo-text';
                 span.textContent = todo.text;
                 span.addEventListener('click', () => toggleTodo(index));
+
+                contentDiv.appendChild(span);
+
+                // Add due date if it exists
+                if (todo.dueDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'todo-date';
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'date-badge';
+                    dateSpan.textContent = '📅 ' + formatDate(todo.dueDate);
+                    dateDiv.appendChild(dateSpan);
+                    contentDiv.appendChild(dateDiv);
+                }
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
@@ -397,7 +479,7 @@
                 deleteBtn.addEventListener('click', () => deleteTodo(index));
 
                 li.appendChild(checkbox);
-                li.appendChild(span);
+                li.appendChild(contentDiv);
                 li.appendChild(deleteBtn);
                 todoList.appendChild(li);
             });
@@ -410,9 +492,28 @@
             return div.innerHTML;
         }
 
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date.getTime() === today.getTime()) {
+                return 'Today';
+            } else if (date.getTime() === tomorrow.getTime()) {
+                return 'Tomorrow';
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+            }
+        }
+
         // Add a new todo
         function addTodo() {
             const text = todoInput.value.trim();
+            const dueDate = dueDateInput.value;
 
             if (text === '') {
                 alert('Please enter a todo!');
@@ -421,12 +522,14 @@
 
             todos.push({
                 text: text,
+                dueDate: dueDate || null,
                 completed: false
             });
 
             saveTodos(todos);
             renderTodos();
             todoInput.value = '';
+            dueDateInput.value = '';
             todoInput.focus();
         }
 
