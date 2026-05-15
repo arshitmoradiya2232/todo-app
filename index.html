@@ -442,6 +442,7 @@
         function isPastDueDate(dateString) {
             if (!dateString) return false;
             const dueDate = new Date(dateString + 'T00:00:00');
+            if (isNaN(dueDate.getTime())) return true;
             const minDate = new Date(getTodayDateString() + 'T00:00:00');
             return dueDate < minDate;
         }
@@ -573,12 +574,12 @@
 
         // Add event listeners
         addBtn.addEventListener('click', addTodo);
-        todoInput.addEventListener('keyup', (e) => {
+        todoInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
         });
-        dueDateInput.addEventListener('keyup', (e) => {
+        dueDateInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
