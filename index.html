@@ -463,15 +463,18 @@
 
                 contentDiv.appendChild(span);
 
-                // Add due date if it exists
+                // Add due date if it exists and is valid
                 if (todo.dueDate) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.className = 'todo-date';
-                    const dateSpan = document.createElement('span');
-                    dateSpan.className = 'date-badge';
-                    dateSpan.textContent = '📅 ' + formatDate(todo.dueDate);
-                    dateDiv.appendChild(dateSpan);
-                    contentDiv.appendChild(dateDiv);
+                    const parsedDueDate = new Date(todo.dueDate + 'T00:00:00');
+                    if (!isNaN(parsedDueDate.getTime())) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'todo-date';
+                        const dateSpan = document.createElement('span');
+                        dateSpan.className = 'date-badge';
+                        dateSpan.textContent = '📅 ' + formatDate(todo.dueDate);
+                        dateDiv.appendChild(dateSpan);
+                        contentDiv.appendChild(dateDiv);
+                    }
                 }
 
                 const deleteBtn = document.createElement('button');
