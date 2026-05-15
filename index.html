@@ -379,6 +379,7 @@
                     type="date"
                     id="dueDateInput"
                     title="Select due date (optional)"
+                    aria-label="Select due date"
                 />
             </div>
             <button id="addBtn">Add</button>
@@ -431,6 +432,14 @@
         // Initialize todos array
         let todos = loadTodos();
 
+        function getTodayDateString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function setDueDateMinDate() {
+            dueDateInput.min = getTodayDateString();
+        }
+
         // Render all todos
         function renderTodos() {
             todoList.innerHTML = '';
@@ -464,13 +473,17 @@
 
                 // Add due date if it exists
                 if (todo.dueDate) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.className = 'todo-date';
-                    const dateSpan = document.createElement('span');
-                    dateSpan.className = 'date-badge';
-                    dateSpan.textContent = '📅 ' + formatDate(todo.dueDate);
-                    dateDiv.appendChild(dateSpan);
-                    contentDiv.appendChild(dateDiv);
+                    const formattedDate = formatDate(todo.dueDate);
+
+                    if (formattedDate) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'todo-date';
+                        const dateSpan = document.createElement('span');
+                        dateSpan.className = 'date-badge';
+                        dateSpan.textContent = '📅 ' + formattedDate;
+                        dateDiv.appendChild(dateSpan);
+                        contentDiv.appendChild(dateDiv);
+                    }
                 }
 
                 const deleteBtn = document.createElement('button');
@@ -496,6 +509,7 @@
         function formatDate(dateString) {
             if (!dateString) return null;
             const date = new Date(dateString + 'T00:00:00');
+            if (Number.isNaN(date.getTime())) return null;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
@@ -514,9 +528,15 @@
         function addTodo() {
             const text = todoInput.value.trim();
             const dueDate = dueDateInput.value;
+            const minDueDate = getTodayDateString();
 
             if (text === '') {
                 alert('Please enter a todo!');
+                return;
+            }
+
+            if (dueDate && dueDate < minDueDate) {
+                alert('Please choose today or a future due date.');
                 return;
             }
 
@@ -554,9 +574,15 @@
                 addTodo();
             }
         });
+        dueDateInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTodo();
+            }
+        });
 
         // Initialize theme and render todos
         initTheme();
+        setDueDateMinDate();
         renderTodos();
     </script>
 </body>
