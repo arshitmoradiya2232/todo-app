@@ -366,7 +366,7 @@
                 placeholder="Add a new todo..."
                 autocomplete="off"
             />
-            <input type="date" id="dueDateInput" aria-label="Due date" />
+            <input type="date" id="dueDateInput" aria-label="Due date" title="Due date" />
             <button id="addBtn">Add</button>
         </div>
 
@@ -451,11 +451,7 @@
             });
         }
 
-        function isOverdueDueDate(dateString) {
-            const dueDate = parseLocalDate(dateString);
-            if (!dueDate) {
-                return false;
-            }
+        function isOverdueDueDate(dueDate) {
             return dueDate < getTodayStart();
         }
 
@@ -495,7 +491,7 @@
                     dueBadge.className = 'due-badge';
                     dueBadge.textContent = `Due ${formatDueDate(parsedDueDate)}`;
 
-                    if (!todo.completed && isOverdueDueDate(todo.dueDate)) {
+                    if (!todo.completed && isOverdueDueDate(parsedDueDate)) {
                         dueBadge.classList.add('overdue');
                     }
 
