@@ -417,17 +417,34 @@
         // Initialize todos array
         let todos = loadTodos();
 
-        function getTodayDateString() {
+        function parseLocalDate(dateString) {
+            const parts = dateString.split('-').map(Number);
+            if (parts.length !== 3 || parts.some(Number.isNaN)) {
+                return null;
+            }
+
+            const [year, month, day] = parts;
+            const date = new Date(year, month - 1, day);
+
+            if (
+                date.getFullYear() !== year ||
+                date.getMonth() !== month - 1 ||
+                date.getDate() !== day
+            ) {
+                return null;
+            }
+
+            return date;
+        }
+
+        function getTodayStart() {
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
         }
 
         function formatDueDate(dateString) {
-            const date = new Date(`${dateString}T00:00:00`);
-            if (Number.isNaN(date.getTime())) {
+            const date = parseLocalDate(dateString);
+            if (!date) {
                 return dateString;
             }
             return date.toLocaleDateString(undefined, {
@@ -435,6 +452,14 @@
                 day: 'numeric',
                 year: 'numeric'
             });
+        }
+
+        function isOverdueDueDate(dateString) {
+            const dueDate = parseLocalDate(dateString);
+            if (!dueDate) {
+                return false;
+            }
+            return dueDate < getTodayStart();
         }
 
         // Render all todos
@@ -472,7 +497,7 @@
                     dueBadge.className = 'due-badge';
                     dueBadge.textContent = `Due ${formatDueDate(todo.dueDate)}`;
 
-                    if (!todo.completed && todo.dueDate < getTodayDateString()) {
+                    if (!todo.completed && isOverdueDueDate(todo.dueDate)) {
                         dueBadge.classList.add('overdue');
                     }
 
