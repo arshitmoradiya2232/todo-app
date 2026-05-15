@@ -11,9 +11,9 @@ A lightweight, single-file todo application built with vanilla HTML, CSS, and Ja
 
 ### Single File Structure
 The entire app lives in `index.html` with three sections:
-1. **HTML** (lines 358-382): Minimal DOM - header, input fields, todo list, empty message
-2. **CSS** (lines 8-356): Embedded styles with CSS custom properties for theming
-3. **JavaScript** (lines 383-580): All app logic
+1. **HTML** (inside the `<body>` section): Minimal DOM - header, input fields, todo list, empty message
+2. **CSS** (embedded in the `<style>` block near the top of the file): Embedded styles with CSS custom properties for theming
+3. **JavaScript** (embedded in the `<script>` block near the end of the file): All app logic
 
 ### Key Functions
 
