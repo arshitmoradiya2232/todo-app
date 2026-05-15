@@ -379,7 +379,6 @@
                     type="date"
                     id="dueDateInput"
                     title="Select due date (optional)"
-                    aria-label="Select optional due date for todo"
                 />
             </div>
             <button id="addBtn">Add</button>
@@ -569,12 +568,12 @@
 
         // Add event listeners
         addBtn.addEventListener('click', addTodo);
-        todoInput.addEventListener('keypress', (e) => {
+        todoInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
         });
-        dueDateInput.addEventListener('keypress', (e) => {
+        dueDateInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
