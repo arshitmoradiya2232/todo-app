@@ -26,6 +26,10 @@
             --delete-btn: #ef4444;
             --delete-btn-hover: #dc2626;
             --toggle-border: #e5e7eb;
+            --due-badge-bg: #e5e7eb;
+            --due-badge-text: #4b5563;
+            --due-overdue-bg: #fee2e2;
+            --due-overdue-text: #b91c1c;
         }
 
         html[data-theme="dark"] {
@@ -49,6 +53,10 @@
             --delete-btn: #ef4444;
             --delete-btn-hover: #dc2626;
             --toggle-border: #374151;
+            --due-badge-bg: #374151;
+            --due-badge-text: #d1d5db;
+            --due-overdue-bg: #7f1d1d;
+            --due-overdue-text: #fecaca;
         }
 
         * {
@@ -160,6 +168,24 @@
             color: var(--text-secondary);
         }
 
+        #dueDateInput {
+            padding: 14px 12px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            line-height: 1.5;
+        }
+
+        #dueDateInput:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--container-bg);
+        }
+
         #addBtn {
             padding: 14px 28px;
             background: var(--btn-primary);
@@ -266,6 +292,30 @@
             color: var(--text-secondary);
         }
 
+        .todo-content {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .due-badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            background: var(--due-badge-bg);
+            color: var(--due-badge-text);
+            white-space: nowrap;
+        }
+
+        .due-badge.overdue {
+            background: var(--due-overdue-bg);
+            color: var(--due-overdue-text);
+        }
+
         .delete-btn {
             padding: 8px 12px;
             background: var(--delete-btn);
@@ -316,6 +366,7 @@
                 placeholder="Add a new todo..."
                 autocomplete="off"
             />
+            <input type="date" id="dueDateInput" aria-label="Due date" />
             <button id="addBtn">Add</button>
         </div>
 
@@ -325,6 +376,7 @@
 
     <script>
         const todoInput = document.getElementById('todoInput');
+        const dueDateInput = document.getElementById('dueDateInput');
         const addBtn = document.getElementById('addBtn');
         const todoList = document.getElementById('todoList');
         const emptyMessage = document.getElementById('emptyMessage');
@@ -365,6 +417,26 @@
         // Initialize todos array
         let todos = loadTodos();
 
+        function getTodayDateString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDueDate(dateString) {
+            const date = new Date(`${dateString}T00:00:00`);
+            if (Number.isNaN(date.getTime())) {
+                return dateString;
+            }
+            return date.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
         // Render all todos
         function renderTodos() {
             todoList.innerHTML = '';
@@ -391,13 +463,29 @@
                 span.textContent = todo.text;
                 span.addEventListener('click', () => toggleTodo(index));
 
+                const content = document.createElement('div');
+                content.className = 'todo-content';
+                content.appendChild(span);
+
+                if (todo.dueDate) {
+                    const dueBadge = document.createElement('span');
+                    dueBadge.className = 'due-badge';
+                    dueBadge.textContent = `Due ${formatDueDate(todo.dueDate)}`;
+
+                    if (!todo.completed && todo.dueDate < getTodayDateString()) {
+                        dueBadge.classList.add('overdue');
+                    }
+
+                    content.appendChild(dueBadge);
+                }
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.textContent = 'Delete';
                 deleteBtn.addEventListener('click', () => deleteTodo(index));
 
                 li.appendChild(checkbox);
-                li.appendChild(span);
+                li.appendChild(content);
                 li.appendChild(deleteBtn);
                 todoList.appendChild(li);
             });
@@ -421,12 +509,14 @@
 
             todos.push({
                 text: text,
-                completed: false
+                completed: false,
+                dueDate: dueDateInput.value || null
             });
 
             saveTodos(todos);
             renderTodos();
             todoInput.value = '';
+            dueDateInput.value = '';
             todoInput.focus();
         }
 
