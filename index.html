@@ -439,6 +439,13 @@
             dueDateInput.min = getTodayDateString();
         }
 
+        function isPastDueDate(dateString) {
+            if (!dateString) return false;
+            const dueDate = new Date(dateString + 'T00:00:00');
+            const minDate = new Date(getTodayDateString() + 'T00:00:00');
+            return dueDate < minDate;
+        }
+
         // Render all todos
         function renderTodos() {
             todoList.innerHTML = '';
@@ -527,14 +534,12 @@
         function addTodo() {
             const text = todoInput.value.trim();
             const dueDate = dueDateInput.value;
-            const minDueDate = getTodayDateString();
-
             if (text === '') {
                 alert('Please enter a todo!');
                 return;
             }
 
-            if (dueDate && dueDate < minDueDate) {
+            if (isPastDueDate(dueDate)) {
                 alert('Please choose today or a future due date.');
                 return;
             }
@@ -568,12 +573,12 @@
 
         // Add event listeners
         addBtn.addEventListener('click', addTodo);
-        todoInput.addEventListener('keydown', (e) => {
+        todoInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
         });
-        dueDateInput.addEventListener('keydown', (e) => {
+        dueDateInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
                 addTodo();
             }
