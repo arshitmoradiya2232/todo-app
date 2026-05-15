@@ -98,10 +98,28 @@
             transform: translateX(5px);
         }
 
+        .todo-item.completed {
+            border-left-color: #99cc99;
+            background: #f5f5f5;
+        }
+
+        .checkbox {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
         .todo-text {
             color: #333;
             font-size: 1em;
             flex: 1;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .todo-text:hover {
+            color: #667eea;
         }
 
         .todo-item.completed .todo-text {
@@ -186,11 +204,25 @@
                 const li = document.createElement('li');
                 li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
 
-                li.innerHTML = `
-                    <span class="todo-text">${escapeHtml(todo.text)}</span>
-                    <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
-                `;
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'checkbox';
+                checkbox.checked = todo.completed;
+                checkbox.addEventListener('change', () => toggleTodo(index));
 
+                const span = document.createElement('span');
+                span.className = 'todo-text';
+                span.textContent = todo.text;
+                span.addEventListener('click', () => toggleTodo(index));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', () => deleteTodo(index));
+
+                li.appendChild(checkbox);
+                li.appendChild(span);
+                li.appendChild(deleteBtn);
                 todoList.appendChild(li);
             });
         }
@@ -225,6 +257,13 @@
         // Delete a todo
         function deleteTodo(index) {
             todos.splice(index, 1);
+            saveTodos(todos);
+            renderTodos();
+        }
+
+        // Toggle todo completion
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
             saveTodos(todos);
             renderTodos();
         }
