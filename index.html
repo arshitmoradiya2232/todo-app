@@ -419,7 +419,8 @@
 
         function parseLocalDate(dateString) {
             const parts = dateString.split('-').map(Number);
-            if (parts.length !== 3 || parts.some(Number.isNaN)) {
+            const hasInvalidPart = parts.some((part) => Number.isNaN(part));
+            if (parts.length !== 3 || hasInvalidPart) {
                 return null;
             }
 
@@ -442,11 +443,7 @@
             return new Date(now.getFullYear(), now.getMonth(), now.getDate());
         }
 
-        function formatDueDate(dateString) {
-            const date = parseLocalDate(dateString);
-            if (!date) {
-                return dateString;
-            }
+        function formatDueDate(date) {
             return date.toLocaleDateString(undefined, {
                 month: 'short',
                 day: 'numeric',
@@ -492,10 +489,11 @@
                 content.className = 'todo-content';
                 content.appendChild(span);
 
-                if (todo.dueDate) {
+                const parsedDueDate = todo.dueDate ? parseLocalDate(todo.dueDate) : null;
+                if (parsedDueDate) {
                     const dueBadge = document.createElement('span');
                     dueBadge.className = 'due-badge';
-                    dueBadge.textContent = `Due ${formatDueDate(todo.dueDate)}`;
+                    dueBadge.textContent = `Due ${formatDueDate(parsedDueDate)}`;
 
                     if (!todo.completed && isOverdueDueDate(todo.dueDate)) {
                         dueBadge.classList.add('overdue');
