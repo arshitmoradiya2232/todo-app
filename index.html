@@ -507,7 +507,14 @@
             } else if (date.getTime() === tomorrow.getTime()) {
                 return 'Tomorrow';
             } else {
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+                const currentYear = today.getFullYear();
+                const options = { month: 'short', day: 'numeric' };
+
+                if (date.getFullYear() !== currentYear) {
+                    options.year = 'numeric';
+                }
+
+                return date.toLocaleDateString('en-US', options);
             }
         }
 
